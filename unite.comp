@@ -1,0 +1,20 @@
+#version 430 core
+
+layout(local_size_x=1) in;
+
+layout(std140, binding=0) uniform stats{
+	ivec4 dude;
+};
+
+layout(std430, binding=0) buffer _input{
+	float IN[];
+};
+
+layout(std430, binding=1) buffer _output{
+	float OUT[];
+};
+
+void main(void){
+	uint i=gl_GlobalInvocationID.x;
+	OUT[i+dude[0]]=IN[i];
+}

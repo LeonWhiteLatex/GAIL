@@ -1,0 +1,17 @@
+#version 430 core
+
+layout(local_size_x=1) in;
+
+layout(std430, binding=0) buffer _input{
+	float IN[];
+};
+
+layout(std430, binding=1) buffer _output{
+	float OUT[];
+};
+
+void main(void){
+	uint i=gl_GlobalInvocationID.x;
+	float e=exp(-IN[i]*2);
+	OUT[i]=(1.0-e)/(1.0+e);
+}

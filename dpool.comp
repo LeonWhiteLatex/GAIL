@@ -1,0 +1,32 @@
+#version 430 core
+
+layout(local_size_x=1) in;
+
+layout(std140, binding=0) uniform stats{
+	ivec4 dude;
+	float alpha;
+};
+
+layout(std430, binding=0) buffer _input{
+	float IN[];
+};
+
+layout(std430, binding=1) buffer _output{
+	float OUT[];
+};
+
+layout (std430, binding=2) buffer standard{
+	uint params[]; //x*y+y
+};
+
+void main(void){
+	uint i=gl_GlobalInvocationID.x*dude[0]*dude[1], X=dude[0], j=gl_GlobalInvocationID.y, k=gl_GlobalInvocationID.z,
+	W=params[i+j*X+k];
+	for(uint J=0, p=0; J<2; J++){
+		for(uint K=0; K<2; K++,p++){
+			if(p==W) OUT[i*4+(j*4+J*2)*X+k*2+K]=IN[i+j*X+k];
+			else OUT[i*4+(j*4+J*2)*X+k*2+K]=0;
+		}
+	}
+}
+

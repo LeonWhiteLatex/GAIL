@@ -1,0 +1,47 @@
+#version 430 core
+
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+
+layout(std140, binding=0) uniform stats{
+	ivec4 dude;
+	ivec4 img_in;
+	ivec4 img_out;
+	float alpha;
+};
+
+layout(std430, binding=0) buffer _input{
+	float IN[];
+};
+
+layout(std430, binding=1) buffer _output{
+	float OUT[];
+};
+
+layout (std430, binding=2) coherent buffer standard{
+	float params[]; //x*y+y
+};
+
+//shared float part_img[6][6];
+
+void main(void){
+	uint i=gl_GlobalInvocationID.x, j=gl_GlobalInvocationID.y, k=gl_GlobalInvocationID.z,
+	I=img_in[0]*img_in[1],J=img_in[0],
+	Z=img_out[0]*img_out[1],Y=img_out[0], X=img_out[1], FULL=i*I+j*J+k,
+	Q=dude[0],W=Q*dude[1],E=W*img_out[2], S=dude[2];
+	
+	OUT[FULL]=0;
+	//int ys=0, xs=0;
+	int ys=-dude[1]/2, xs=-dude[0]/2;
+	if(dude[3]==0){ ys*=2; xs*=2; }
+	
+	for(int z=0; z<img_out[2]; z++){
+		for(int y=0, yi=ys; y<dude[1]; y++,yi++){
+			for(int x=0, xi=xs; x<dude[0]; x++,xi++){ float data=0;
+				if((yi+j*S)<X&&(yi+j*S)>=0&&(xi+k*S)<Y&&(xi+k*S)>=0) //data=(k*S+xi);
+					data=IN[z*Z+(j+yi)*Y+k+xi];
+				OUT[FULL]+=data*params[i*W+z*E+y*Q+x];
+			}
+		}
+	}
+	//if(j<X&&k<Y) OUT[FULL]=IN[i*Z+j*Y+k];
+}//

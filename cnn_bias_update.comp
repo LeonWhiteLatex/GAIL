@@ -1,0 +1,37 @@
+#version 430 core
+
+layout(local_size_x=1) in;
+
+layout(std140, binding=0) uniform stats{
+	ivec4 dude;
+	ivec4 img_in;
+	ivec4 img_out;
+	float alpha;
+};
+
+layout(std430, binding=0) buffer _input{
+	float IN[];
+};
+
+layout(std430, binding=1) buffer _output{
+	float OUT[]; //grad
+};
+
+layout (std430, binding=2) coherent buffer standard{
+	float params[]; //x*y+y
+};
+
+//shared float part_img[6][6];
+float spd=alpha;
+
+void main(void){
+	uint i=gl_GlobalInvocationID.x, j=gl_GlobalInvocationID.y, k=gl_GlobalInvocationID.z,
+	igout=img_out[0], igout2=igout*img_out[1],
+	img_out1=img_out[1],
+	end=dude[0]*dude[1]*img_in[2]*img_out[2];
+	for(int y=0; y<img_out1; y++){
+		for(int x=0; x<igout; x++){
+			params[end+i]+=spd*OUT[i*igout2+y*igout+x];
+		}
+	}
+}//
